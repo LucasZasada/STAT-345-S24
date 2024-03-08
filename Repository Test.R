@@ -4,3 +4,6 @@ min(vec)
 max(vec)
 median(vec)
 sd(vec)
+
+range(vec)
+plot(vec)
