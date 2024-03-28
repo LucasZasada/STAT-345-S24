@@ -1,0 +1,93 @@
+---
+title: "Midterm"
+author: "Lucas Zasada"
+date: "2024-02-29"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+warning: false
+---
+```{r, echo=FALSE, message=FALSE}
+#Load Packages Needed
+library(tidyverse)
+library(ggforce)
+```
+
+```{r, echo=FALSE, message=FALSE}
+#Gathering Data
+
+#Read in all nba shots data for a given year
+nba.shots2017 <- read_csv("NBA_2017_Shots.csv")
+nba.shots2018 <- read_csv("NBA_2018_Shots.csv")
+nba.shots2019 <- read_csv("NBA_2019_Shots.csv")
+
+#Filter for Paul George shots
+pg.shots2017 <- nba.shots2017 %>% filter(PLAYER_NAME == "Paul George")
+pg.shots2018 <- nba.shots2018 %>% filter(PLAYER_NAME == "Paul George")
+pg.shots2019 <- nba.shots2019 %>% filter(PLAYER_NAME == "Paul George")
+
+#Combines the years we are looking for
+pg.shots <- rbind(pg.shots2017,pg.shots2018,pg.shots2019)
+```
+
+```{r, echo=FALSE,warning=FALSE,fig.width = 10, fig.height = 10}
+#Creating the court and adding points
+
+#This is numeric values for the curve of the three point line to follow
+theta <- seq(0, pi, length.out = 100)
+  x <- 0 + 22 * cos(theta)
+  y <- 13 + 16 * sin(theta)
+  three_point_line <- data.frame(x=x,y=y)
+
+#Creates the ggplot object
+p <- ggplot(pg.shots, aes(x = LOC_X, y = LOC_Y)) + 
+  
+#Sets the x and y axis
+  xlim(-25,25) + 
+  ylim(0,60) +
+  coord_fixed() +
+  
+#Creates a void theme in order to draw the court
+  theme_void() +
+  
+#Draw the Court
+  geom_segment(aes(x = -25, y = 0, xend = 25, yend = 0), linewidth = 1) + 
+  geom_segment(aes(x = -25, y = 60, xend = 25, yend = 60), linewidth = 1) +
+  geom_segment(aes(x = -25, y = 0, xend = -25, yend = 60), linewidth = 1) +
+  geom_segment(aes(x = 25, y = 0, xend = 25, yend = 60), linewidth = 1) + 
+  geom_segment(aes(x = -8, y = 0, xend = -8, yend = 19), linewidth = 1) +
+  geom_segment(aes(x = 8, y = 0, xend = 8, yend = 19), linewidth = 1)  +
+  geom_segment(aes(x = -8, y = 19, xend = 8, yend = 19), linewidth = 1) +
+  geom_segment(aes(x = -22, y = 0, xend = -22, yend = 14), linewidth = 1) +
+  geom_segment(aes(x = 22, y = 0, xend = 22, yend = 14), linewidth = 1) + 
+  geom_path(data = three_point_line, aes(x,y),linewidth = 1) + 
+  
+#Displays the points on the court and alters opacity
+  geom_point(aes(color=pg.shots$SHOT_MADE), alpha = .35) +
+  
+#Changes the color of the points
+  scale_color_manual(values = c("orange","blue"),name = "Shot Made")  +
+  
+#Changes the title of the graphic
+  labs(title = "Paul George Shot Charts while on the OKC Thunder") + 
+  
+#Centers the the title
+  theme(plot.title = element_text(hjust = .5)) + 
+  
+#Creates 3 different graphics based on the season
+  facet_wrap(~SEASON_1)
+
+p
+```
+
+```{r,echo=FALSE}
+cat("\nSummary:\n")
+cat("\u2022 This shot chart displays Paul Georges shots during his time with the Oklahoma City Thunder\n")
+cat("\u2022 The years he was on the Thunder were from 2017-2019\n")
+cat("\u2022 The orange dots represent the shots he missed while the blue dots represent the shots that he made\n")
+```
+#For Those Interested
+
+First thing I did was load the packages I would need in order to manipulate the data and create the charts.  All the data that was used was retrieved from github by DomSamangy. After I retrieved the data, I read it in and filtered it by Paul George in order to get the necessary shots to create the charts. The data points for the shots were in a form from -25 to 25 for the x axis and 0 to 50 for the y axis, so I decided to use a graph that had axis of -25 to 25 and 0 to 60. To draw the court on the axis I looked up the dimensions of an nba court and made segments to create the court. I was struggling to create the three point line, so I decided to create a numeric vector for geom_path to follow. The color was chosen because the Oklahoma City Thunder are orange and blue. The title was then changed to be "Paul George Shot Charts while on the OKC Thunder", and was adjusted to be centered on the graphic. Lastly, to differentiate the years that he was on the Thunder, I facet wrapped by season.
+
